@@ -1,0 +1,38 @@
+version: '3.7'
+
+services:
+  mysql:
+    container_name: mysql
+    image: bitnami/mysql:latest
+    volumes:
+      - ./mysqldb:/bitnami/mysql/data
+      - ./my_custom.cnf:/opt/bitnami/mysql/conf/my_custom.cnf:ro
+    environment:
+      - ALLOW_EMPTY_PASSWORD=no
+      - MYSQL_ROOT_PASSWORD=root
+      - MARIADB_CHARACTER_SET=utf8
+      - MYSQL_DATABASE=glpi_db
+      - MYSQL_USER=glpi_user
+      - MYSQL_PASSWORD=glpi_password
+      
+  php-fpm:
+    container_name: php-fpm
+    image: bitnami/php-fpm:latest
+    depends_on:
+      - mysql
+    volumes:
+      - ./glpi:/app
+
+  apache:
+    container_name: apache
+    image: bitnami/apache:latest
+    depends_on:
+      - php-fpm
+    ports:
+      - 80:8080
+    volumes:
+      - ./apache_vhost/glpi.conf:/vhosts/glpi.conf:ro
+      - ./glpi:/app
+      #- /path/to/apache-certs:/certs
+
+
